@@ -15,5 +15,7 @@ class Lab1Application : CommandLineRunner {
 }
 
 fun main(args: Array<String>) {
+    log.info { "Begin of main" }
     runApplication<Lab1Application>(*args)
+    log.info { "End of main" }
 }
