@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Наша команда — Юрій і Владислав</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background-color: #0b0d10;
+            color: #e5e7eb;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header, main, footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding-top: 40px;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #60a5fa;
+        }
+        h2 {
+            color: #60a5fa;
+        }
+        .team {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        .card {
+            background: #11161a;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+        .avatar {
+            display: block;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
+            border: 2px solid #1f2937;
+            background-size: cover;
+            background-position: center;
+        }
+        a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            border-top: 1px solid #1f2937;
+            margin-top: 40px;
+            padding-top: 20px;
+            font-size: 0.9rem;
+            color: #9aa3af;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Наша команда</h1>
+    <p>Ми — дует бекенд-розробників, які створюють сучасні, надійні серверні рішення.</p>
+</header>
+
+<main>
+    <section class="team">
+        <div class="card">
+            <div class="avatar" style="background-image:url('https://picsum.photos/seed/yurii/200');"></div>
+            <h2>Юрій</h2>
+            <p><strong>Java / Kotlin Backend Developer</strong></p>
+            <p>Працює з Spring Boot, Docker, Redis і CI/CD. Фанат чистої архітектури та автоматизації.</p>
+            <p><a href="yurii.html">Детальніше →</a></p>
+            <p><a href="https://github.com/furaizi" target="_blank">GitHub профіль</a></p>
+        </div>
+
+        <div class="card">
+            <div class="avatar" style="background-image:url('https://picsum.photos/seed/vladyslav/200');"></div>
+            <h2>Владислав</h2>
+            <p><strong>Nest.js Backend Developer</strong></p>
+            <p>Розробляє API на Node.js/Nest.js, працює з PostgreSQL, Prisma та GraphQL.</p>
+            <p><a href="vladyslav.html">Детальніше →</a></p>
+            <p><a href="https://github.com/crosshell" target="_blank">GitHub профіль</a></p>
+        </div>
+    </section>
+
+    <p style="text-align:center; margin-top:40px;">
+        <a href="index.html">← Назад на головну</a>
+    </p>
+</main>
+
+<footer>
+    © 2025 Юрій і Владислав — дует бекенд-розробників
+</footer>
+</body>
+</html>
