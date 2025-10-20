@@ -1,12 +1,14 @@
 package org.example.lab2.repository;
 
 import org.example.lab2.entity.Post;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+@Repository
 public class FakePostRepository implements PostRepository {
 
     private final Map<UUID, Post> posts = new ConcurrentHashMap<>();
