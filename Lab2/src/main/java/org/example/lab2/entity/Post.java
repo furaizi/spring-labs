@@ -2,11 +2,12 @@ package org.example.lab2.entity;
 
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 public class Post {
-    private int id;
-    private int authorId;
+    private UUID id;
+    private UUID authorId;
     private String title;
     private String content;
     private int likes = 0;
