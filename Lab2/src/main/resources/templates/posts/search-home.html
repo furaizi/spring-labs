@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Search Posts</title>
+</head>
+<body>
+<h1>Search Posts</h1>
+
+<a href="/posts/new">Create a new post</a>
+<hr/>
+
+<h3>Search by Topic</h3>
+<form th:action="@{/posts/by-topic}" method="get">
+    <label for="topicId">Enter Topic ID:</label>
+    <input type="text" name="id" id="topicId" placeholder="Topic UUID" required />
+    <button type="submit">Search</button>
+</form>
+
+<hr/>
+
+<h3>Search by Author</h3>
+<form th:action="@{/posts/by-author}" method="get">
+    <label for="authorId">Enter Author ID:</label>
+    <input type="text" name="id" id="authorId" placeholder="Author UUID" required />
+    <button type="submit">Search</button>
+</form>
+
+<hr/> <h3>Search by Title</h3>
+<form th:action="@{/posts/search}" method="get">
+    <label for="keyword">Enter keyword:</label>
+    <input type="text" name="keyword" id="keyword" placeholder="Keyword" required />
+    <button type="submit">Search</button>
+</form>
+</body>
+</html>

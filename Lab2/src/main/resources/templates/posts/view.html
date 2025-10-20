@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${post.title}">Post Details</title>
+</head>
+<body>
+<a href="/posts">&lt;- Back to Search</a>
+<hr/>
+<h1 th:text="${post.title}">Post Title</h1>
+<p th:text="${post.content}">Post content...</p>
+<hr/>
+<strong>Likes: <span th:text="${post.likes}">0</span></strong>
+
+<div style="margin-top: 10px;">
+    <form th:action="@{/posts/{id}/like(id=${post.id})}" method="post" style="display:inline;">
+        <button type="submit">Like</button>
+    </form>
+
+    <form th:action="@{/posts/{id}/unlike(id=${post.id})}" method="post" style="display:inline;">
+        <button type="submit">Unlike</button>
+    </form>
+
+    <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display:inline;">
+        <button type="submit">Delete</button>
+    </form>
+</div>
+</body>
+</html>
