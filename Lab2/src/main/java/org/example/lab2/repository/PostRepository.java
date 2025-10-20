@@ -1,6 +1,7 @@
 package org.example.lab2.repository;
 
 import org.example.lab2.entity.Post;
+
 import java.util.*;
 
 public interface PostRepository {
