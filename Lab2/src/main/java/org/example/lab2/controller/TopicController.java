@@ -1,6 +1,7 @@
 package org.example.lab2.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.lab2.entity.Post;
 import org.example.lab2.entity.Topic;
 import org.example.lab2.service.TopicService;
 import org.springframework.stereotype.Controller;
@@ -36,16 +37,21 @@ public class TopicController {
     @GetMapping("/topics/{id}")
     public String detail(@PathVariable UUID id, Model model) {
         topicService.incrementViewCount(id);
-        model.addAttribute("topic", topicService.getById(id));
-        model.addAttribute("posts", List.of());
+        Topic topic = topicService.getWithPosts(id);
+        model.addAttribute("topic", topic);
         return "topics/detail";
     }
 
     @PostMapping("/topics/{id}/posts")
     public String addPost(@PathVariable UUID id,
+                          @RequestParam String title,
                           @RequestParam String content,
-                          @RequestParam String author) {
-        topicService.touchReply(id, LocalDateTime.now());
+                          @RequestParam(required = false) UUID authorId) {
+        Post p = new Post();
+        p.setTitle(title);
+        p.setContent(content);
+        if (authorId != null) p.setAuthorId(authorId);
+        topicService.addPostToTopic(id, p);
         return "redirect:/topics/{id}";
     }
 
@@ -66,15 +72,13 @@ public class TopicController {
         Topic t = new Topic();
         t.setTitle(title);
         t.setDescription(description);
-        t.setAuthor("admin"); // для демо
+        t.setAuthor("admin");
         t.setPinned(pinned);
         t.setClosed(closed);
         t.setTags(parseTags(tagsRaw));
         t.setDeleted(false);
         t.setReplyCount(0);
         t.setViewCount(0);
-        t.setCreatedAt(LocalDateTime.now());
-        t.setUpdatedAt(LocalDateTime.now());
 
         Topic saved = topicService.save(t);
         return "redirect:/topics/" + saved.getId();
@@ -95,14 +99,12 @@ public class TopicController {
                          @RequestParam(required = false, defaultValue = "false") boolean pinned,
                          @RequestParam(required = false, defaultValue = "false") boolean closed,
                          @RequestParam(required = false, name = "tagsRaw") String tagsRaw) {
-
         Topic topic = topicService.getById(id);
         topic.setTitle(title);
         topic.setDescription(description);
         topic.setPinned(pinned);
         topic.setClosed(closed);
         topic.setTags(parseTags(tagsRaw));
-        topic.setUpdatedAt(LocalDateTime.now());
         topicService.update(topic);
 
         return "redirect:/topics/" + id;

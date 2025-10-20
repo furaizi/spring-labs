@@ -1,6 +1,7 @@
 package org.example.lab2.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.lab2.entity.Post;
 import org.example.lab2.entity.Topic;
 import org.example.lab2.repository.TopicRepository;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.UUID;
 public class TopicService {
 
     private final TopicRepository topicRepository;
+    private final PostService postService;
 
     public List<Topic> findAll() {
         return topicRepository.findAll();
@@ -87,6 +89,31 @@ public class TopicService {
     }
 
 
+    public Topic getWithPosts(UUID id) {
+        Topic t = getById(id);
+        List<Post> posts = postService.getPostsByTopicId(id);
+        t.setPosts(posts);
+        return t;
+    }
+
+    public Post addPostToTopic(UUID topicId, Post post) {
+        post.setTopicId(topicId);
+        Post created = postService.createPost(post);
+        touchReply(topicId, created.getCreatedAt() != null ? created.getCreatedAt() : LocalDateTime.now());
+        return created;
+    }
+
+    public boolean deletePostFromTopic(UUID topicId, UUID postId) {
+        boolean ok = postService.deletePost(postId);
+        if (ok) {
+            Topic t = getById(topicId);
+            int replies = t.getReplyCount() == null ? 0 : t.getReplyCount();
+            t.setReplyCount(Math.max(0, replies - 1));
+            t.setUpdatedAt(LocalDateTime.now());
+            topicRepository.update(t);
+        }
+        return ok;
+    }
 
 
 

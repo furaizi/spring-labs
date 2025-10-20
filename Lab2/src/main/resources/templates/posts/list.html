@@ -4,11 +4,17 @@
     <title th:text="${listTitle ?: 'Post List'}">Post List</title>
 </head>
 <body>
-<a href="/posts">&lt;- Back to Search</a>
+
+<p th:if="${backToTopicId != null}">
+    <a th:href="@{/topics/{id}(id=${backToTopicId})}">&lt;- Back to Topic</a>
+</p>
+<p th:unless="${backToTopicId != null}">
+    <a href="/posts">&lt;- Back to Search</a>
+</p>
 
 <h1 th:text="${listTitle ?: 'Post List'}">Post List</h1>
-
 <hr/>
+
 <div th:if="${posts.empty}">
     <p>No posts found for this query.</p>
 </div>
@@ -26,11 +32,12 @@
     <tr th:each="post : ${posts}">
         <td th:text="${post.id}"></td>
         <td>
-            <a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}"></a>
+            <a th:href="@{/posts/{id}(id=${post.id}, backToTopicId=${backToTopicId})}"
+               th:text="${post.title}"></a>
         </td>
         <td th:text="${post.likes}"></td>
         <td>
-            <a th:href="@{/posts/{id}/edit(id=${post.id})}">Edit</a>
+            <a th:href="@{/posts/{id}/edit(id=${post.id}, backToTopicId=${backToTopicId})}">Edit</a>
         </td>
     </tr>
     </tbody>

@@ -4,7 +4,14 @@
     <title th:text="${post.title}">Post Details</title>
 </head>
 <body>
-<a href="/posts">&lt;- Back to Search</a>
+
+<p th:if="${backToTopicId != null}">
+    <a th:href="@{/topics/{id}(id=${backToTopicId})}">&lt;- Back to Topic</a>
+</p>
+<p th:unless="${backToTopicId != null}">
+    <a href="/posts">&lt;- Back to Search</a>
+</p>
+
 <hr/>
 <h1 th:text="${post.title}">Post Title</h1>
 <p th:text="${post.content}">Post content...</p>
@@ -13,14 +20,17 @@
 
 <div style="margin-top: 10px;">
     <form th:action="@{/posts/{id}/like(id=${post.id})}" method="post" style="display:inline;">
+        <input type="hidden" name="backToTopicId" th:value="${backToTopicId}"/>
         <button type="submit">Like</button>
     </form>
 
     <form th:action="@{/posts/{id}/unlike(id=${post.id})}" method="post" style="display:inline;">
+        <input type="hidden" name="backToTopicId" th:value="${backToTopicId}"/>
         <button type="submit">Unlike</button>
     </form>
 
     <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display:inline;">
+        <input type="hidden" name="backToTopicId" th:value="${backToTopicId}"/>
         <button type="submit">Delete</button>
     </form>
 </div>
