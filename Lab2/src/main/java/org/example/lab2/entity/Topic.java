@@ -3,6 +3,7 @@ package org.example.lab2.entity;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,4 +22,5 @@ public class Topic {
     private LocalDateTime lastPostAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<Post> posts;
 }
