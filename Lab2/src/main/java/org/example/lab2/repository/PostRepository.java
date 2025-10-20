@@ -1,18 +1,17 @@
 package org.example.lab2.repository;
 
 import org.example.lab2.entity.Post;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public interface PostRepository {
     List<Post> findAll();
-    Optional<Post> findById(int id);
+    Optional<Post> findById(UUID id);
     Post save(Post post);
-    boolean deleteById(int id);
-    List<Post> findByAuthorId(int authorId);
+    boolean deleteById(UUID id);
+    List<Post> findByAuthorId(UUID authorId);
     List<Post> findByTitleContaining(String keyword);
-    boolean incrementLikes(int id);
-    boolean decrementLikes(int id);
+    boolean incrementLikes(UUID id);
+    boolean decrementLikes(UUID id);
     List<Post> findTopLiked(int limit);
-    boolean updateContent(int id, String newTitle, String newContent);
+    boolean updateContent(UUID id, String newTitle, String newContent);
 }
