@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Data
 public class Topic {
-    private Long id;
+    private String id;
     private String title;
     private String description;
     private String author;
