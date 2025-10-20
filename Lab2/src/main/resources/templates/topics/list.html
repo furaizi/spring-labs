@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Topics</title>
+</head>
+<body>
+<h1>Topics</h1>
+
+<p>
+    <a th:href="@{/admin/topics/new}">+ Create topic</a>
+</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Replies</th>
+        <th>Views</th>
+        <th>Last post</th>
+        <th>Pinned</th>
+        <th>Closed</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="t : ${topics}">
+        <td>
+            <a th:href="@{/topics/{id}(id=${t.id})}" th:text="${t.title}">title</a>
+        </td>
+        <td th:text="${t.author}">author</td>
+        <td th:text="${t.replyCount}">0</td>
+        <td th:text="${t.viewCount}">0</td>
+        <td th:text="${t.lastPostAt != null ? #temporals.format(t.lastPostAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+        <td th:text="${t.pinned}">false</td>
+        <td th:text="${t.closed}">false</td>
+        <td>
+            <a th:href="@{/admin/topics/{id}/edit(id=${t.id})}">Edit</a>
+            <form th:action="@{/admin/topics/{id}/delete(id=${t.id})}" method="post" style="display:inline">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(topics)}">
+        <td colspan="8">No topics yet</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

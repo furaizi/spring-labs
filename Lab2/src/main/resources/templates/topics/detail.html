@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:http="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${topic.title}">Topic</title>
+</head>
+<body>
+
+<p><a th:href="@{/topics}">← Back to list</a></p>
+
+<h1 th:text="${topic.title}">Topic title</h1>
+<p th:text="${topic.description}">Topic description</p>
+
+<ul>
+    <li><b>Author:</b> <span th:text="${topic.author}">author</span></li>
+    <li><b>Views:</b> <span th:text="${topic.viewCount}">0</span></li>
+    <li><b>Replies:</b> <span th:text="${topic.replyCount}">0</span></li>
+    <li><b>Pinned:</b> <span th:text="${topic.pinned}">false</span></li>
+    <li><b>Closed:</b> <span th:text="${topic.closed}">false</span></li>
+    <li><b>Tags:</b>
+        <span th:text="${topic.tags != null && !topic.tags.isEmpty() ? #strings.listJoin(topic.tags, ', ') : '-'}">-</span>
+    </li>
+    <li><b>Created:</b>
+        <span th:text="${topic.createdAt != null ? #temporals.format(topic.createdAt,'yyyy-MM-dd HH:mm') : '-'}">-</span>
+    </li>
+    <li><b>Last post:</b>
+        <span th:text="${topic.lastPostAt != null ? #temporals.format(topic.lastPostAt,'yyyy-MM-dd HH:mm') : '-'}">-</span>
+    </li>
+</ul>
+
+<p>
+    <a th:href="@{/admin/topics/{id}/edit(id=${topic.id})}">Edit topic</a>
+</p>
+
+<hr/>
+
+<h2>Posts</h2>
+<!-- Пока постов нет — просто отрисуем пустой список -->
+<ul>
+    <li th:each="p : ${posts}">
+        <b th:text="${p.author}">user</b>:
+        <span th:text="${p.content}">content</span>
+        <small th:text="${#temporals.format(p.createdAt,'yyyy-MM-dd HH:mm')}"></small>
+    </li>
+    <li th:if="${#lists.isEmpty(posts)}">No posts yet</li>
+</ul>
+
+<h3>Add post (demo)</h3>
+<form th:action="@{/topics/{id}/posts(id=${topic.id})}" method="post">
+    <p>
+        <label>Author:
+            <input type="text" name="author" required/>
+        </label>
+    </p>
+    <p>
+        <label>Content:<br/>
+            <textarea name="content" rows="3" cols="60" required></textarea>
+        </label>
+    </p>
+    <button type="submit">Send</button>
+</form>
+
+</body>
+</html>
