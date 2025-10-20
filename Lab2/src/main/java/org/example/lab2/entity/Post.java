@@ -8,6 +8,7 @@ import java.util.UUID;
 public class Post {
     private UUID id;
     private UUID authorId;
+    private UUID topicId;
     private String title;
     private String content;
     private int likes = 0;

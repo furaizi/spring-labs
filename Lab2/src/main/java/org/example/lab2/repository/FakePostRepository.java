@@ -14,8 +14,17 @@ public class FakePostRepository implements PostRepository {
     private final Map<UUID, Post> posts = new ConcurrentHashMap<>();
 
     @Override
-    public List<Post> findAll() {
-        return new ArrayList<>(posts.values());
+    public List<Post> findByTopicId(UUID topicId) {
+        return posts.values().stream()
+                .filter(p -> p.getTopicId() != null && p.getTopicId().equals(topicId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Post> findByAuthorId(UUID authorId) {
+        return posts.values().stream()
+                .filter(p -> p.getAuthorId() != null && p.getAuthorId().equals(authorId))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -37,13 +46,6 @@ public class FakePostRepository implements PostRepository {
     @Override
     public boolean deleteById(UUID id) {
         return posts.remove(id) != null;
-    }
-
-    @Override
-    public List<Post> findByAuthorId(UUID authorId) {
-        return posts.values().stream()
-                .filter(p -> p.getAuthorId() == authorId)
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -76,15 +78,7 @@ public class FakePostRepository implements PostRepository {
     }
 
     @Override
-    public List<Post> findTopLiked(int limit) {
-        return posts.values().stream()
-                .sorted(Comparator.comparingInt(Post::getLikes).reversed())
-                .limit(limit)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean updateContent(UUID id, String newTitle, String newContent) {
+    public boolean update(UUID id, String newTitle, String newContent) {
         Post post = posts.get(id);
         if (post != null) {
             post.setTitle(newTitle);
