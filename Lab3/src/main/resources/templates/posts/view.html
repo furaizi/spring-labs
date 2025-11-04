@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8"/>
     <title th:text="${post.title}">Post Details</title>
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';
+                   form-action 'self'; base-uri 'self'; frame-ancestors 'none'">
+    <style>
+        .popularity { font-style: italic; color: #444; }
+    </style>
 </head>
 <body>
 
@@ -17,17 +23,15 @@
 <h1 th:text="${post.title}">Post Title</h1>
 
 <p th:text="${post.content}">Post content...</p>
+
 <hr/>
-
-<div th:switch="${post.likes}">
-    <p th:case="0">No likes yet</p>
-    <p th:case="1">First like — congrats!</p>
-    <p th:case="2">Getting attention</p>
-    <p th:case="3">Popular</p>
-    <p th:case="*">Hot post: <span th:text="${post.likes}"/> likes</p>
-</div>
-
 <strong>Likes: <span th:text="${post.likes}">0</span></strong>
+
+<p class="popularity" th:switch="${post.likes}">
+    <span th:case="0">No likes yet — be the first!</span>
+    <span th:case="1">1 like — nice start.</span>
+    <span th:case="*">Popular post!</span>
+</p>
 
 <div style="margin-top: 10px;">
     <form th:action="@{/posts/{id}/like(id=${post.id})}" method="post" style="display:inline;">

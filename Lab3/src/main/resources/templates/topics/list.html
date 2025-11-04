@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Topics</title>
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';
+                   form-action 'self'; base-uri 'self'; frame-ancestors 'none'">
+    <style>
+        .badge { padding: 2px 6px; border-radius: 6px; font-size: 12px; }
+        .badge-yellow { background: #fff7cc; border: 1px solid #e5c100; }
+        .badge-gray   { background: #eee;     border: 1px solid #bbb; }
+        .badge-red    { background: #ffd6d6;  border: 1px solid #d33; }
+        .badge-green  { background: #e6ffe6;  border: 1px solid #2d8a2d; }
+        table { border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 6px; }
+    </style>
 </head>
 <body>
 <h1>Topics</h1>
@@ -11,21 +23,23 @@
     <a th:href="@{/admin/topics/new}">+ Create topic</a>
 </p>
 
-<table border="1" cellpadding="6" cellspacing="0">
+<table cellpadding="0" cellspacing="0">
     <thead>
     <tr>
+        <th>#</th>
         <th>Title</th>
         <th>Author</th>
         <th>Replies</th>
         <th>Views</th>
         <th>Last post</th>
-        <th>Pinned</th>
-        <th>Closed</th>
+        <th>Status</th>
         <th>Actions</th>
     </tr>
     </thead>
     <tbody>
-    <tr th:each="t : ${topics}">
+    <tr th:each="t,iter : ${topics}"
+        th:with="status=${t.pinned} ? (${t.closed} ? 'PINNED_CLOSED' : 'PINNED') : (${t.closed} ? 'CLOSED' : 'NORMAL')">
+        <td th:text="${iter.index + 1}">1</td>
         <td>
             <a th:href="@{/topics/{id}(id=${t.id})}" th:text="${t.title}">title</a>
         </td>
@@ -33,8 +47,15 @@
         <td th:text="${t.replyCount}">0</td>
         <td th:text="${t.viewCount}">0</td>
         <td th:text="${t.lastPostAt != null ? #temporals.format(t.lastPostAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
-        <td th:text="${t.pinned}">false</td>
-        <td th:text="${t.closed}">false</td>
+        <td>
+            <span th:switch="${status}">
+                <span th:case="'PINNED_CLOSED'" class="badge badge-red">Pinned &amp; Closed</span>
+                <span th:case="'PINNED'"        class="badge badge-yellow">Pinned</span>
+                <span th:case="'CLOSED'"        class="badge badge-gray">Closed</span>
+                <span th:case="*"
+                      class="badge badge-green">Open</span>
+            </span>
+        </td>
         <td>
             <a th:href="@{/admin/topics/{id}/edit(id=${t.id})}">Edit</a>
             <form th:action="@{/admin/topics/{id}/delete(id=${t.id})}" method="post" style="display:inline">
