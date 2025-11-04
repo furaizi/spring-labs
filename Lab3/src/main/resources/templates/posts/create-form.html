@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Post</title>
+</head>
+<body>
+
+<p th:if="${backToTopicId != null}">
+    <a th:href="@{/topics/{id}(id=${backToTopicId})}">&lt;- Back to Topic</a>
+</p>
+<p th:unless="${backToTopicId != null}">
+    <a href="/posts">&lt;- Back to Search</a>
+</p>
+
+<h1>Create a New Post</h1>
+
+<form th:action="@{/posts/new}" th:object="${post}" method="post">
+    <input type="hidden" name="backToTopicId" th:value="${backToTopicId}"/>
+
+    <div>
+        <label for="title">Title:</label>
+        <input type="text" id="title" th:field="*{title}" required/>
+    </div>
+    <div>
+        <label for="content">Content:</label>
+        <textarea id="content" th:field="*{content}" rows="5" cols="40" required></textarea>
+    </div>
+    <div>
+        <label for="authorId">Author ID (UUID):</label>
+        <input type="text" id="authorId" th:field="*{authorId}"/>
+    </div>
+    <div>
+        <label for="topicId">Topic ID (UUID):</label>
+        <input type="text" id="topicId" th:field="*{topicId}" placeholder="auto from context if empty"/>
+    </div>
+
+    <button type="submit">Create</button>
+</form>
+</body>
+</html>
