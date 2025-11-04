@@ -30,7 +30,7 @@ public class PostController {
     public String listPostsByTopic(@RequestParam("id") UUID topicId, Model model) {
         model.addAttribute("posts", postService.getPostsByTopicId(topicId));
         model.addAttribute("listTitle", "Пости за темою: " + topicId);
-        model.addAttribute("backToTopicId", topicId); // для Back to Topic
+        model.addAttribute("backToTopicId", topicId);
         return "posts/list";
     }
 
@@ -59,7 +59,7 @@ public class PostController {
     public String showCreateForm(@RequestParam(value = "topicId", required = false) UUID topicId,
                                  Model model) {
         Post p = new Post();
-        p.setTopicId(topicId); // підхопимо з query, щоб не вводити вручну
+        p.setTopicId(topicId);
         model.addAttribute("post", p);
         model.addAttribute("backToTopicId", topicId);
         return "posts/create-form";
