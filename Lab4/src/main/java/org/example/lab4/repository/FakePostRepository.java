@@ -56,6 +56,11 @@ public class FakePostRepository implements PostRepository {
     }
 
     @Override
+    public List<Post> findAll(){
+        return new ArrayList<>(posts.values());
+    }
+
+    @Override
     public boolean incrementLikes(UUID id) {
         Post post = posts.get(id);
         if (post != null) {

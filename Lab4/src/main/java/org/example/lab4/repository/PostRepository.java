@@ -11,6 +11,7 @@ public interface PostRepository {
     Post save(Post post);
     boolean deleteById(UUID id);
     List<Post> findByTitleContaining(String keyword);
+    List<Post> findAll();
     boolean incrementLikes(UUID id);
     boolean decrementLikes(UUID id);
     boolean update(UUID id, String newTitle, String newContent);
