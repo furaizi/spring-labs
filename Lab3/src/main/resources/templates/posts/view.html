@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8"/>
     <title th:text="${post.title}">Post Details</title>
 </head>
 <body>
@@ -14,8 +15,18 @@
 
 <hr/>
 <h1 th:text="${post.title}">Post Title</h1>
+
 <p th:text="${post.content}">Post content...</p>
 <hr/>
+
+<div th:switch="${post.likes}">
+    <p th:case="0">No likes yet</p>
+    <p th:case="1">First like — congrats!</p>
+    <p th:case="2">Getting attention</p>
+    <p th:case="3">Popular</p>
+    <p th:case="*">Hot post: <span th:text="${post.likes}"/> likes</p>
+</div>
+
 <strong>Likes: <span th:text="${post.likes}">0</span></strong>
 
 <div style="margin-top: 10px;">
