@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: Lab4
+
+springdoc:
+  swagger-ui:
+    url: /api-specs/forum-post-api.yml
