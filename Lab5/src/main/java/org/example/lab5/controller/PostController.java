@@ -2,6 +2,7 @@ package org.example.lab5.controller;
 
 import org.example.lab5.entity.Post;
 import org.example.lab5.service.PostService;
+import org.example.lab5.service.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,10 +16,12 @@ import java.util.UUID;
 public class PostController {
 
     private final PostService postService;
+    private final TopicService topicService;
 
     @Autowired
-    public PostController(PostService postService) {
+    public PostController(PostService postService, TopicService topicService) {
         this.postService = postService;
+        this.topicService = topicService;
     }
 
     @GetMapping
@@ -71,9 +74,11 @@ public class PostController {
         if (post.getAuthorId() == null) post.setAuthorId(UUID.randomUUID());
         if (post.getTopicId() == null) post.setTopicId(backToTopicId);
 
-        Post createdPost = postService.createPost(post);
+        UUID topicId = post.getTopicId() != null ? post.getTopicId() : backToTopicId;
+        Post createdPost = (topicId != null)
+                ? topicService.addPostToTopic(topicId, post)
+                : postService.createPost(post);
 
-        UUID topicId = createdPost.getTopicId() != null ? createdPost.getTopicId() : backToTopicId;
         if (topicId != null) {
             return "redirect:/topics/" + topicId;
         }
@@ -107,8 +112,12 @@ public class PostController {
     public String deletePost(@PathVariable UUID id,
                              @RequestParam(value = "backToTopicId", required = false) UUID backToTopicId) {
         Optional<Post> p = postService.getPostById(id);
-        postService.deletePost(id);
         UUID topicId = (p.isPresent() && p.get().getTopicId() != null) ? p.get().getTopicId() : backToTopicId;
+        if (topicId != null) {
+            topicService.deletePostFromTopic(topicId, id);
+        } else {
+            postService.deletePost(id);
+        }
         if (topicId != null) return "redirect:/topics/" + topicId;
         return "redirect:/posts";
     }

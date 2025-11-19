@@ -1,6 +1,15 @@
 spring:
   application:
-    name: Lab4
+    name: Lab5
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lab5
+    username: lab5
+    password: lab5
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
 
 springdoc:
   swagger-ui:

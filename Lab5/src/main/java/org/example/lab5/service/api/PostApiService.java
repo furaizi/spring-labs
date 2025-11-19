@@ -6,7 +6,9 @@ import com.github.fge.jsonpatch.JsonPatch;
 import org.example.lab5.dto.*;
 import org.example.lab5.entity.Post;
 import org.example.lab5.repository.PostRepository;
+import org.example.lab5.service.TopicService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -17,16 +19,18 @@ import java.util.stream.Stream;
 public class PostApiService {
     private final PostRepository repository;
     private final ObjectMapper mapper;
+    private final TopicService topicService;
 
-    public PostApiService(PostRepository repository, ObjectMapper mapper) {
+    public PostApiService(PostRepository repository, ObjectMapper mapper, TopicService topicService) {
         this.repository = repository;
         this.mapper = mapper;
+        this.topicService = topicService;
     }
 
     // CREATE
+    @Transactional
     public Post create(PostCreateRequest req) {
         Post post = new Post();
-        post.setId(UUID.randomUUID());
         post.setAuthorId(req.authorId());
         post.setTopicId(req.topicId());
         post.setTitle(req.title());
@@ -34,6 +38,9 @@ public class PostApiService {
         post.setLikes(0);
         post.setCreatedAt(LocalDateTime.now());
         post.setUpdatedAt(LocalDateTime.now());
+        if (req.topicId() != null) {
+            return topicService.addPostToTopic(req.topicId(), post);
+        }
         return repository.save(post);
     }
 
@@ -42,18 +49,25 @@ public class PostApiService {
     }
 
     // PUT (replace)
+    @Transactional
     public Optional<Post> replace(UUID id, PostUpdateRequest req) {
         Optional<Post> existing = repository.findById(id);
         if (existing.isEmpty())
             return Optional.empty();
         Post p = existing.get();
+        UUID oldTopicId = p.getTopicId();
         p.setTopicId(req.topicId());
         p.setTitle(req.title());
         p.setContent(req.content());
         p.setUpdatedAt(LocalDateTime.now());
-        repository.save(p);
-        return Optional.of(p);
+        Post saved = repository.save(p);
+        if (!Objects.equals(oldTopicId, req.topicId())) {
+            topicService.movePost(oldTopicId, req.topicId(), saved.getUpdatedAt());
+        }
+        return Optional.of(saved);
     }
+
+    @Transactional
     public Optional<Post> patchJsonPatch(UUID id, JsonPatch patch) {
         try {
             Optional<Post> existing = repository.findById(id);
@@ -61,6 +75,7 @@ public class PostApiService {
                 return Optional.empty();
 
             Post current = existing.get();
+            UUID oldTopicId = current.getTopicId();
             JsonNode node = mapper.valueToTree(current);
             JsonNode patched = patch.apply(node);
             Post result = mapper.treeToValue(patched, Post.class);
@@ -74,18 +89,23 @@ public class PostApiService {
 
             result.setUpdatedAt(LocalDateTime.now());
             repository.save(result);
+            if (!Objects.equals(oldTopicId, result.getTopicId())) {
+                topicService.movePost(oldTopicId, result.getTopicId(), result.getUpdatedAt());
+            }
             return Optional.of(result);
         } catch (Exception e) {
             return Optional.empty();
         }
     }
 
+    @Transactional
     public Optional<Post> patchMerge(UUID id, PostMergePatch patch) {
         Optional<Post> existing = repository.findById(id);
         if (existing.isEmpty())
             return Optional.empty();
 
         Post p = existing.get();
+        UUID oldTopicId = p.getTopicId();
         if (patch.topicId() != null)
             p.setTopicId(patch.topicId());
         if (patch.title() != null)
@@ -94,14 +114,23 @@ public class PostApiService {
             p.setContent(patch.content());
 
         p.setUpdatedAt(LocalDateTime.now());
-        repository.save(p);
-        return Optional.of(p);
+        Post saved = repository.save(p);
+        if (!Objects.equals(oldTopicId, saved.getTopicId())) {
+            topicService.movePost(oldTopicId, saved.getTopicId(), saved.getUpdatedAt());
+        }
+        return Optional.of(saved);
     }
 
+    @Transactional
     public boolean deleteById(UUID id) {
         Optional<Post> existing = repository.findById(id);
         if (existing.isEmpty()) return false;
-        repository.deleteById(id);
+        UUID topicId = existing.get().getTopicId();
+        if (topicId != null) {
+            topicService.deletePostFromTopic(topicId, id);
+        } else {
+            repository.deleteById(id);
+        }
         return true;
     }
 

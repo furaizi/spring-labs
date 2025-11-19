@@ -1,6 +1,7 @@
 package org.example.lab5.repository;
 
 import org.example.lab5.entity.Topic;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Repository
+@Profile("fake")
 public class FakeTopicRepository implements TopicRepository {
 
     private final Map<UUID, Topic> storage = new ConcurrentHashMap<>();

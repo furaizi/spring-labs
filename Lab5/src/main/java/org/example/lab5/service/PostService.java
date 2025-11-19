@@ -5,6 +5,7 @@ import org.example.lab5.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +33,20 @@ public class PostService {
     }
 
     public Post createPost(Post post) {
+        LocalDateTime now = LocalDateTime.now();
+        if (post.getId() == null) {
+            post.setId(null);
+        }
+        if (post.getAuthorId() == null) {
+            post.setAuthorId(UUID.randomUUID());
+        }
+        if (post.getCreatedAt() == null) {
+            post.setCreatedAt(now);
+        }
+        post.setUpdatedAt(now);
+        if (post.getLikes() < 0) {
+            post.setLikes(0);
+        }
         return postRepository.save(post);
     }
 
