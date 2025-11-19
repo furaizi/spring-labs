@@ -1,7 +1,6 @@
 package org.example.lab6.repository;
 
 import org.example.lab6.entity.Topic;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -19,7 +18,6 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
-@Primary
 public class TopicJdbcTemplateRepository implements TopicRepository {
 
     private static final String BASE_SELECT = """

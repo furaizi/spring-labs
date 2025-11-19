@@ -1,7 +1,6 @@
 package org.example.lab6.repository;
 
 import org.example.lab6.entity.Post;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +12,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-@Primary
 public class PostJdbcClientRepository implements PostRepository {
 
     private static final String BASE_SELECT = """
