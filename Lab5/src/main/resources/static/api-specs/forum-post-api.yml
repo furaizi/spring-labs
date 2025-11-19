@@ -64,7 +64,7 @@ paths:
       summary: Get topic with posts
       description: Returns topic plus its posts by ID.
       parameters:
-        - $ref: '#/components/parameters/topicId'
+        - $ref: '#/components/parameters/topicIdPath'
       responses:
         '200':
           description: Found
@@ -78,7 +78,7 @@ paths:
       summary: Update topic
       description: Fully updates topic fields.
       parameters:
-        - $ref: '#/components/parameters/topicId'
+        - $ref: '#/components/parameters/topicIdPath'
       requestBody:
         required: true
         content:
@@ -99,7 +99,7 @@ paths:
       summary: Delete topic
       description: Deletes topic by ID.
       parameters:
-        - $ref: '#/components/parameters/topicId'
+        - $ref: '#/components/parameters/topicIdPath'
       responses:
         '204':
           description: Deleted
@@ -112,7 +112,7 @@ paths:
       summary: Add post to topic
       description: Creates a new post under a specific topic.
       parameters:
-        - $ref: '#/components/parameters/topicId'
+        - $ref: '#/components/parameters/topicIdPath'
       requestBody:
         required: true
         content:
@@ -141,7 +141,7 @@ paths:
         - $ref: '#/components/parameters/size'
         - $ref: '#/components/parameters/sort'
         - $ref: '#/components/parameters/authorId'
-        - $ref: '#/components/parameters/topicId'
+        - $ref: '#/components/parameters/topicIdPath'
         - $ref: '#/components/parameters/titleContains'
         - $ref: '#/components/parameters/minLikes'
         - $ref: '#/components/parameters/createdAtFrom'
@@ -321,7 +321,7 @@ paths:
 
 components:
   parameters:
-    topicId:
+    topicIdPath:
       name: id
       in: path
       required: true
