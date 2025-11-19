@@ -1,0 +1,659 @@
+openapi: 3.1.0
+info:
+  title: Posts API
+  version: 1.1.0
+  description: |
+    REST API for managing posts and topics. Supports full CRUD, filtering, pagination, sorting,
+    and partial updates using two standards:
+      - JSON Merge Patch (RFC 7386) via `application/merge-patch+json`
+      - JSON Patch (RFC 6902) via `application/json-patch+json`
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Posts
+    description: Operations related to posts
+  - name: Topics
+    description: Operations related to topics and their posts
+
+paths:
+  /topics:
+    get:
+      tags: [Topics]
+      summary: List topics
+      description: Returns topics filtered by title/author/pinned/closed/deleted flags.
+      parameters:
+        - $ref: '#/components/parameters/topicTitle'
+        - $ref: '#/components/parameters/topicAuthor'
+        - $ref: '#/components/parameters/topicPinned'
+        - $ref: '#/components/parameters/topicClosed'
+        - $ref: '#/components/parameters/topicDeleted'
+      responses:
+        '200':
+          description: Topics found
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Topic' }
+    post:
+      tags: [Topics]
+      summary: Create topic
+      description: Creates a new topic.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TopicCreateRequest' }
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Topic' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /topics/{id}:
+    get:
+      tags: [Topics]
+      summary: Get topic with posts
+      description: Returns topic plus its posts by ID.
+      parameters:
+        - $ref: '#/components/parameters/topicIdPath'
+      responses:
+        '200':
+          description: Found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Topic' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Topics]
+      summary: Update topic
+      description: Fully updates topic fields.
+      parameters:
+        - $ref: '#/components/parameters/topicIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TopicUpdateRequest' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Topic' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Topics]
+      summary: Delete topic
+      description: Deletes topic by ID.
+      parameters:
+        - $ref: '#/components/parameters/topicIdPath'
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /topics/{id}/posts:
+    post:
+      tags: [Topics]
+      summary: Add post to topic
+      description: Creates a new post under a specific topic.
+      parameters:
+        - $ref: '#/components/parameters/topicIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Post' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Post' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /posts:
+    get:
+      tags: [Posts]
+      operationId: listPosts
+      summary: List posts with filtering and pagination
+      description: |
+        Returns a paginated list of posts. Supports filters and sorting.
+        Pagination parameters follow Spring conventions: `page` (0-based), `size`, `sort=field,(asc|desc)`.
+        Allowed sort fields: `createdAt`, `updatedAt`, `likes`, `title`.
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/sort'
+        - $ref: '#/components/parameters/authorId'
+        - $ref: '#/components/parameters/topicIdPath'
+        - $ref: '#/components/parameters/titleContains'
+        - $ref: '#/components/parameters/minLikes'
+        - $ref: '#/components/parameters/createdAtFrom'
+        - $ref: '#/components/parameters/createdAtTo'
+      responses:
+        '200':
+          description: Successfully retrieved page of posts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagePost'
+              examples:
+                ok:
+                  summary: Example response
+                  value:
+                    content:
+                      - id: "8a1f2b83-8b3b-4b0e-9b9a-0f9f2c7b8a10"
+                        authorId: "b8d9c4e9-6b1d-4e6a-9f92-8fa2b1a1d111"
+                        topicId: "5b52d4a8-8c4a-4c4c-8f4a-2c5a5d8e9f01"
+                        title: "First Post"
+                        content: "Post text..."
+                        likes: 3
+                        createdAt: "2025-11-04T10:00:00Z"
+                        updatedAt: "2025-11-04T10:00:00Z"
+                    page: 0
+                    size: 20
+                    totalElements: 1
+                    totalPages: 1
+                    sort: "createdAt,desc"
+                    links:
+                      self: "/api/v1/posts?page=0&size=20&sort=createdAt,desc"
+                      next: null
+                      prev: null
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [Posts]
+      operationId: createPost
+      summary: Create a new post
+      description: |
+        Creates a new post. Fields `id`, `likes`, `createdAt`, and `updatedAt` are generated by the server.
+        A successful creation returns `201 Created`, the resource body, and a `Location` header with the URI of the new post.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PostCreateRequest' }
+            examples:
+              create:
+                value:
+                  authorId: "b8d9c4e9-6b1d-4e6a-9f92-8fa2b1a1d111"
+                  topicId: "5b52d4a8-8c4a-4c4c-8f4a-2c5a5d8e9f01"
+                  title: "New Post"
+                  content: "Post content"
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URI of the created resource
+              schema: { type: string, format: uri }
+              example: /api/v1/posts/8a1f2b83-8b3b-4b0e-9b9a-0f9f2c7b8a10
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Post' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /posts/{id}:
+    get:
+      tags: [Posts]
+      operationId: getPostById
+      summary: Get a post by ID
+      description: Returns full post data by its identifier.
+      parameters:
+        - $ref: '#/components/parameters/postId'
+      responses:
+        '200':
+          description: Found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Post' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Posts]
+      operationId: replacePost
+      summary: Replace an existing post
+      description: |
+        Completely replaces a resource. Fields not provided in the request body may be reset to default values.
+        Fields `id`, `likes`, `createdAt`, and `updatedAt` are managed by the server and ignored during update.
+      parameters:
+        - $ref: '#/components/parameters/postId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PostUpdateRequest' }
+            examples:
+              put:
+                value:
+                  topicId: "5b52d4a8-8c4a-4c4c-8f4a-2c5a5d8e9f01"
+                  title: "Updated title"
+                  content: "Updated content"
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Post' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    patch:
+      tags: [Posts]
+      operationId: patchPost
+      summary: Partially update a post
+      description: |
+        Supports two patch formats:
+        - JSON Merge Patch (RFC 7386) via `application/merge-patch+json`
+        - JSON Patch (RFC 6902) via `application/json-patch+json`
+        The server automatically updates the `updatedAt` field.
+      parameters:
+        - $ref: '#/components/parameters/postId'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PostMergePatch'
+            examples:
+              mergePatch:
+                value:
+                  title: "New title"
+                  content: "Updated content only"
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/JsonPatchDocument'
+            examples:
+              jsonPatch:
+                value:
+                  - op: replace
+                    path: /title
+                    value: "New title"
+                  - op: replace
+                    path: /content
+                    value: "New content"
+      responses:
+        '200':
+          description: Partially updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Post' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+    delete:
+      tags: [Posts]
+      operationId: deletePost
+      summary: Delete a post
+      description: Deletes a post by ID. Returns 404 if the resource does not exist.
+      parameters:
+        - $ref: '#/components/parameters/postId'
+      responses:
+        '204':
+          description: Deleted (no content)
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    topicIdPath:
+      name: id
+      in: path
+      required: true
+      description: Topic identifier (UUID)
+      schema: { type: string, format: uuid }
+    topicTitle:
+      name: title
+      in: query
+      description: Filter by title substring
+      schema: { type: string }
+    topicAuthor:
+      name: author
+      in: query
+      description: Filter by author
+      schema: { type: string }
+    topicPinned:
+      name: pinned
+      in: query
+      description: Require pinned flag
+      schema: { type: boolean }
+    topicClosed:
+      name: closed
+      in: query
+      description: Require closed flag
+      schema: { type: boolean }
+    topicDeleted:
+      name: deleted
+      in: query
+      description: Require deleted flag
+      schema: { type: boolean }
+    postId:
+      name: id
+      in: path
+      required: true
+      description: Post identifier (UUID)
+      schema: { type: string, format: uuid }
+    page:
+      name: page
+      in: query
+      description: Page number (0-based)
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    size:
+      name: size
+      in: query
+      description: Page size (number of items per page)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    sort:
+      name: sort
+      in: query
+      description: Sort field and direction in format `field,(asc|desc)`
+      schema:
+        type: string
+        example: createdAt,desc
+    authorId:
+      name: authorId
+      in: query
+      description: Filter by author ID
+      schema: { type: string, format: uuid }
+    topicId:
+      name: topicId
+      in: query
+      description: Filter by topic ID
+      schema: { type: string, format: uuid }
+    titleContains:
+      name: titleContains
+      in: query
+      description: Search by title substring (case-insensitive)
+      schema: { type: string, minLength: 1 }
+    minLikes:
+      name: minLikes
+      in: query
+      description: Minimum number of likes
+      schema:
+        type: integer
+        minimum: 0
+    createdAtFrom:
+      name: createdAtFrom
+      in: query
+      description: Lower bound of creation date (RFC 3339)
+      schema: { type: string, format: date-time }
+    createdAtTo:
+      name: createdAtTo
+      in: query
+      description: Upper bound of creation date (RFC 3339)
+      schema: { type: string, format: date-time }
+
+  responses:
+    BadRequest:
+      description: Invalid parameters, body format, or schema
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetail' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetail' }
+    UnprocessableEntity:
+      description: Validation or semantic error
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ProblemDetail' }
+
+  schemas:
+    Topic:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        title: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string }
+        author: { type: string }
+        viewCount: { type: integer, format: int32 }
+        replyCount: { type: integer, format: int32 }
+        pinned: { type: boolean }
+        closed: { type: boolean }
+        tags:
+          type: array
+          items: { type: string }
+        deleted: { type: boolean }
+        lastPostAt: { $ref: '#/components/schemas/Timestamp' }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        updatedAt: { $ref: '#/components/schemas/Timestamp' }
+        posts:
+          type: array
+          items: { $ref: '#/components/schemas/Post' }
+      required: [id, title, author, pinned, closed, deleted, createdAt, updatedAt]
+
+    TopicCreateRequest:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string }
+        author: { type: string, example: "alice" }
+        pinned: { type: boolean }
+        closed: { type: boolean }
+        tags:
+          type: array
+          items: { type: string }
+      required: [title]
+
+    TopicUpdateRequest:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string }
+        pinned: { type: boolean }
+        closed: { type: boolean }
+        tags:
+          type: array
+          items: { type: string }
+        deleted: { type: boolean }
+      required: [title]
+    Uuid:
+      type: string
+      format: uuid
+      example: "8a1f2b83-8b3b-4b0e-9b9a-0f9f2c7b8a10"
+
+    Timestamp:
+      type: string
+      format: date-time
+      description: Timestamp in RFC 3339 format (UTC recommended)
+      example: "2025-11-04T10:00:00Z"
+
+    Post:
+      type: object
+      description: Post model
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+          readOnly: true
+        authorId:
+          $ref: '#/components/schemas/Uuid'
+          description: Post author
+        topicId:
+          $ref: '#/components/schemas/Uuid'
+          description: Topic or category identifier
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: string
+          minLength: 1
+          maxLength: 20000
+        likes:
+          type: integer
+          format: int32
+          minimum: 0
+          readOnly: true
+          description: Number of likes (server-managed field)
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+          readOnly: true
+        updatedAt:
+          $ref: '#/components/schemas/Timestamp'
+          readOnly: true
+      required: [id, authorId, title, content, likes, createdAt, updatedAt]
+
+    PostCreateRequest:
+      type: object
+      description: Request body for creating a post
+      properties:
+        authorId:
+          $ref: '#/components/schemas/Uuid'
+        topicId:
+          $ref: '#/components/schemas/Uuid'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: string
+          minLength: 1
+          maxLength: 20000
+      required: [authorId, title, content]
+
+    PostUpdateRequest:
+      type: object
+      description: Full update of post fields (PUT)
+      properties:
+        topicId:
+          $ref: '#/components/schemas/Uuid'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: string
+          minLength: 1
+          maxLength: 20000
+      required: [title, content]
+
+    PostMergePatch:
+      type: object
+      description: JSON Merge Patch (RFC 7386) for partial post update
+      properties:
+        topicId:
+          $ref: '#/components/schemas/Uuid'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: string
+          minLength: 1
+          maxLength: 20000
+      additionalProperties: false
+
+    JsonPatchOperation:
+      type: object
+      description: JSON Patch operation (RFC 6902)
+      properties:
+        op:
+          type: string
+          enum: [add, remove, replace, move, copy, test]
+        path:
+          type: string
+          description: JSON Pointer (RFC 6901) to target field (e.g. `/title`)
+        from:
+          type: string
+          description: JSON Pointer source for `move` or `copy` operations
+        value:
+          description: New value for `add`, `replace`, or `test`
+      required: [op, path]
+
+    JsonPatchDocument:
+      type: array
+      items:
+        $ref: '#/components/schemas/JsonPatchOperation'
+
+    PagePost:
+      type: object
+      description: Paginated list of Post results
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        page:
+          type: integer
+          minimum: 0
+          description: Page number (0-based)
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+        sort:
+          type: string
+          description: Active sorting format `field,(asc|desc)`
+        links:
+          type: object
+          additionalProperties:
+            type: [string, 'null']
+          description: Pagination links (`self`, `next`, `prev`, etc.)
+      required: [content, page, size, totalElements, totalPages]
+
+    ProblemDetail:
+      type: object
+      description: Problem response according to RFC 7807 (application/problem+json)
+      properties:
+        type:
+          type: string
+          format: uri
+          example: "https://example.com/problems/validation-error"
+        title:
+          type: string
+          example: "Validation failed"
+        status:
+          type: integer
+          example: 422
+        detail:
+          type: string
+          example: "Field 'title' must not be empty"
+        instance:
+          type: string
+          format: uri
+          example: "/api/v1/posts"
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+          description: "Validation error map: field → list of messages"

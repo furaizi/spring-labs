@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: Lab6
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lab6
+    username: lab6
+    password: lab6
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+
+springdoc:
+  swagger-ui:
+    url: /api-specs/forum-post-api.yml

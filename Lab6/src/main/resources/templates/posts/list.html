@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${listTitle ?: 'Post List'}">Post List</title>
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';
+                   form-action 'self'; base-uri 'self'; frame-ancestors 'none'">
+</head>
+<body>
+
+<p th:if="${backToTopicId != null}">
+    <a th:href="@{/topics/{id}(id=${backToTopicId})}">&lt;- Back to Topic</a>
+</p>
+<p th:unless="${backToTopicId != null}">
+    <a href="/posts">&lt;- Back to Search</a>
+</p>
+
+<h1 th:text="${listTitle ?: 'Post List'}">Post List</h1>
+<hr/>
+
+<div th:if="${posts.empty}">
+    <p>No posts found for this query.</p>
+</div>
+
+<table th:if="${!posts.empty}" border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Likes</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="post : ${posts}">
+        <td th:text="${post.id}"></td>
+        <td>
+            <a th:href="@{/posts/{id}(id=${post.id}, backToTopicId=${backToTopicId})}"
+               th:text="${post.title}"></a>
+        </td>
+        <td th:text="${post.likes}"></td>
+        <td>
+            <a th:href="@{/posts/{id}/edit(id=${post.id}, backToTopicId=${backToTopicId})}">Edit</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
