@@ -12,7 +12,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata_lab5:/var/lib/postgresql/data
+      - pgdata_lab6:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U lab6 -d lab6" ]
       interval: 10s
@@ -20,5 +20,5 @@ services:
       retries: 5
 
 volumes:
-  pgdata_lab5:
+  pgdata_lab6:
     driver: local
