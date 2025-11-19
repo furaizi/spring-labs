@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Posts API
-  version: 1.0.0
+  version: 1.1.0
   description: |
-    REST API for managing posts. Supports full CRUD, filtering, pagination, sorting,
+    REST API for managing posts and topics. Supports full CRUD, filtering, pagination, sorting,
     and partial updates using two standards:
       - JSON Merge Patch (RFC 7386) via `application/merge-patch+json`
       - JSON Patch (RFC 6902) via `application/json-patch+json`
@@ -14,8 +14,119 @@ servers:
 tags:
   - name: Posts
     description: Operations related to posts
+  - name: Topics
+    description: Operations related to topics and their posts
 
 paths:
+  /topics:
+    get:
+      tags: [Topics]
+      summary: List topics
+      description: Returns topics filtered by title/author/pinned/closed/deleted flags.
+      parameters:
+        - $ref: '#/components/parameters/topicTitle'
+        - $ref: '#/components/parameters/topicAuthor'
+        - $ref: '#/components/parameters/topicPinned'
+        - $ref: '#/components/parameters/topicClosed'
+        - $ref: '#/components/parameters/topicDeleted'
+      responses:
+        '200':
+          description: Topics found
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Topic' }
+    post:
+      tags: [Topics]
+      summary: Create topic
+      description: Creates a new topic.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TopicCreateRequest' }
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Topic' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /topics/{id}:
+    get:
+      tags: [Topics]
+      summary: Get topic with posts
+      description: Returns topic plus its posts by ID.
+      parameters:
+        - $ref: '#/components/parameters/topicId'
+      responses:
+        '200':
+          description: Found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Topic' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Topics]
+      summary: Update topic
+      description: Fully updates topic fields.
+      parameters:
+        - $ref: '#/components/parameters/topicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TopicUpdateRequest' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Topic' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Topics]
+      summary: Delete topic
+      description: Deletes topic by ID.
+      parameters:
+        - $ref: '#/components/parameters/topicId'
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /topics/{id}/posts:
+    post:
+      tags: [Topics]
+      summary: Add post to topic
+      description: Creates a new post under a specific topic.
+      parameters:
+        - $ref: '#/components/parameters/topicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Post' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Post' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /posts:
     get:
       tags: [Posts]
@@ -210,6 +321,37 @@ paths:
 
 components:
   parameters:
+    topicId:
+      name: id
+      in: path
+      required: true
+      description: Topic identifier (UUID)
+      schema: { type: string, format: uuid }
+    topicTitle:
+      name: title
+      in: query
+      description: Filter by title substring
+      schema: { type: string }
+    topicAuthor:
+      name: author
+      in: query
+      description: Filter by author
+      schema: { type: string }
+    topicPinned:
+      name: pinned
+      in: query
+      description: Require pinned flag
+      schema: { type: boolean }
+    topicClosed:
+      name: closed
+      in: query
+      description: Require closed flag
+      schema: { type: boolean }
+    topicDeleted:
+      name: deleted
+      in: query
+      description: Require deleted flag
+      schema: { type: boolean }
     postId:
       name: id
       in: path
@@ -291,6 +433,54 @@ components:
           schema: { $ref: '#/components/schemas/ProblemDetail' }
 
   schemas:
+    Topic:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        title: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string }
+        author: { type: string }
+        viewCount: { type: integer, format: int32 }
+        replyCount: { type: integer, format: int32 }
+        pinned: { type: boolean }
+        closed: { type: boolean }
+        tags:
+          type: array
+          items: { type: string }
+        deleted: { type: boolean }
+        lastPostAt: { $ref: '#/components/schemas/Timestamp' }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        updatedAt: { $ref: '#/components/schemas/Timestamp' }
+        posts:
+          type: array
+          items: { $ref: '#/components/schemas/Post' }
+      required: [id, title, author, pinned, closed, deleted, createdAt, updatedAt]
+
+    TopicCreateRequest:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string }
+        author: { type: string, example: "alice" }
+        pinned: { type: boolean }
+        closed: { type: boolean }
+        tags:
+          type: array
+          items: { type: string }
+      required: [title]
+
+    TopicUpdateRequest:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 255 }
+        description: { type: string }
+        pinned: { type: boolean }
+        closed: { type: boolean }
+        tags:
+          type: array
+          items: { type: string }
+        deleted: { type: boolean }
+      required: [title]
     Uuid:
       type: string
       format: uuid

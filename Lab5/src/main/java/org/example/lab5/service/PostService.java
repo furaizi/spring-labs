@@ -4,6 +4,7 @@ import org.example.lab5.entity.Post;
 import org.example.lab5.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +33,7 @@ public class PostService {
         return postRepository.findById(id);
     }
 
+    @Transactional
     public Post createPost(Post post) {
         LocalDateTime now = LocalDateTime.now();
         if (post.getId() == null) {
@@ -50,6 +52,7 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    @Transactional
     public boolean deletePost(UUID id) {
         return postRepository.deleteById(id);
     }
@@ -66,6 +69,7 @@ public class PostService {
         return postRepository.decrementLikes(id);
     }
 
+    @Transactional
     public boolean updatePost(UUID id, String newTitle, String newContent) {
         return postRepository.update(id, newTitle, newContent);
     }
