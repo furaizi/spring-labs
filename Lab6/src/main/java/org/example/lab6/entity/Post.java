@@ -1,5 +1,6 @@
 package org.example.lab6.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -30,10 +31,10 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "author_id", nullable = false)
     private UUID authorId;
 
-    @Column
+    @Column(name = "topic_id")
     private UUID topicId;
 
     @Column(nullable = false, length = 200)
@@ -53,7 +54,8 @@ public class Post {
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id", insertable = false, updatable = false)
+    @JoinColumn(name = "topic_id", referencedColumnName = "id", insertable = false, updatable = false)
     private Topic topic;
 }

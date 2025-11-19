@@ -141,7 +141,7 @@ paths:
         - $ref: '#/components/parameters/size'
         - $ref: '#/components/parameters/sort'
         - $ref: '#/components/parameters/authorId'
-        - $ref: '#/components/parameters/topicIdPath'
+        - $ref: '#/components/parameters/topicId'
         - $ref: '#/components/parameters/titleContains'
         - $ref: '#/components/parameters/minLikes'
         - $ref: '#/components/parameters/createdAtFrom'
